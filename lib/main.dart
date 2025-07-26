@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';  // Add this import for Platform detection
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -60,10 +61,20 @@ class _ScaleReaderScreenState extends State<ScaleReaderScreen> {
   }
 
   Future<void> _requestPermissions() async {
-    await Permission.bluetooth.request();
-    await Permission.bluetoothConnect.request();
-    await Permission.bluetoothScan.request();
-    await Permission.location.request();
+    if (Platform.isAndroid) {
+      await [
+        Permission.bluetooth,
+        Permission.bluetoothConnect,
+        Permission.bluetoothScan,
+        Permission.locationWhenInUse,  // More precise than just location
+      ].request();
+    } else if (Platform.isIOS) {
+      await [
+        Permission.bluetooth,
+        Permission.bluetoothAdvertise,
+        Permission.bluetoothConnect,
+      ].request();
+    }
   }
 
   void _startScan() {
